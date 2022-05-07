@@ -32,6 +32,10 @@ demographics <- orthogeri_csv |>
     )
   )
 
+# Issues
+# orthogeri$fio2 has two entry errors, one is 43 and one is 47
+# orthogeri$t one has day = 8 not day 8
+
 # Table 1
 demographics |>
   pivot_longer(
@@ -49,13 +53,17 @@ demographics |>
     `ASA class` = asa,
     `Admission type` = admission,
     # Preoperative LVEF, %
+    # ef 20-70%
     `Coronary artery disease` = cad,
     `Previous myocardial infarction ` = mi_prior,
     `Arterial hypertension` = hypert,
     # Peripheral vascular disease
+    # arteriopathy
     # History of stroke
+    # stroke
     `Current smoker` = smoker,
     # Chronic pulmonary disease`
+    # copd
     `Diabetes` = diab,
     `Obstructive sleep apnea` = osas,
     `History of neurosurgery` = neurosurg,
@@ -67,7 +75,7 @@ demographics |>
 demographics |>
   mutate(
     type_surg = case_when(
-    # double check for overlaps
+      # double check for overlaps
       abdominal_surg == 1 ~ "Abdominal surgery",
       ortho_surg == 1 ~ "Orthopedic surgery",
       TRUE ~ NA_character_
@@ -105,6 +113,7 @@ demographics |>
   select(
     group,
     # RBC transfusion
+    # prbc_ever
     `ICU admission` = ae_icuadm,
     `Hospital length of stay` = hlos,
     `Hospital mortality` = hospmort,
@@ -116,3 +125,43 @@ demographics |>
   ) |>
   tbl_summary(by = group) |>
   add_p()
+
+
+# Table 4
+# Hemoglobin = Hb
+# Supplemental oxygen (per 1 L/min increase) <- fio2? but in wrong units
+# all.equal(orthogeri_csv$mbinirs, (orthogeri_csv$mlnirs + orthogeri_csv$mrnirs)/2)
+#> TRUE
+# all.equal(orthogeri_csv$mbinirs_discharge[orthogeri_csv$last_nirs == 1], orthogeri_csv$mbinirs[orthogeri_csv$last_nirs == 1])
+#> TRUE
+# How is cardio data used?
+
+# See also: https://datascienceplus.com/r-for-publication-by-page-piccinini-lesson-6-part-2-linear-mixed-effects-models-lmem/
+# https://stats.stackexchange.com/questions/468436/p-values-from-lmer-with-lmertest-why-reml-true
+
+library(lme4)
+library(lmerTest)
+
+lmer_df <- orthogeri_csv |>
+  mutate(
+    age_10 = age / 10,
+    height_10 = height / 10,
+  ) |>
+  mutate(
+    time = parse_number(t)
+  ) |>
+  filter(!is.na(time))
+
+model <- lmer(
+  mbinirs ~ group + time + male + age_10 + height_10 + mi_prior + arteriopathy + fio2 + hb + prbc_ever + (1 | id),
+  lmer_df
+)
+
+summary(model)
+# anova(model)
+
+test <- glm(
+  mbinirs ~ group + time + male + age_10 + height_10 + mi_prior + arteriopathy + fio2 + hb + prbc_ever,
+  data = lmer_df
+)
+summary(test)
