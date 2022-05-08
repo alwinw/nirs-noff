@@ -1,9 +1,9 @@
 library(targets)
 library(tarchetypes)
 
-lapply(list.files("R", full.names = TRUE), source)
+lapply(list.files(here::here("R"), pattern = ".R$", full.names = TRUE), source)
 
-packages <- c("dplyr", "ggplot2", "haven", "gtsummary")
+packages <- c("dplyr", "tidyr", "ggplot2", "RColorBrewer", "haven", "gtsummary", "here")
 
 tar_option_set(
   packages = packages

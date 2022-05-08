@@ -165,3 +165,53 @@ test <- glm(
   data = lmer_df
 )
 summary(test)
+
+theme_set(theme_bw())
+
+plot_df <- orthogeri_csv |>
+  select(group, id, t, mbinirs, mbinirs_discharge) |>
+  mutate(t = ifelse(t == "8", "day 8", t)) |>
+  pivot_wider(
+    names_from = t,
+    values_from = mbinirs
+  ) |>
+  rename(discharge = mbinirs_discharge) |>
+  pivot_longer(
+    cols = c(baseline:`day 1`, discharge),
+    names_to = "time",
+    values_to = "mbinirs"
+  ) |>
+  mutate(time = factor(
+    time,
+    levels = c("baseline", "intubated", "postop", paste("day", 1:8), "discharge"),
+    ordered = TRUE
+  )) |>
+  mutate(
+    group = factor(
+      group,
+      levels = c("Orthogeriatric", "Minor surgery"),
+      labels = c("Orthogeriatric Patients", "Control"),
+      ordered = TRUE
+    )
+  ) |>
+  filter(!is.na(mbinirs))
+
+#> plot_df |> pivot_wider(
+#>   names_from = time,
+#>   values_from = mbinirs
+#> ) |> filter(is.na(`day 2`), is.na(`day 3`))
+
+frequencyAnnotation <- function(x) {
+  c(y = (quantile(x, .75, names = F) + median(x)) / 2, label = length(x))
+}
+
+ggplot(plot_df, aes(x = time, y = mbinirs, fill = time)) +
+  stat_boxplot(geom = "errorbar", width = 0.2) +
+  geom_boxplot() +
+  stat_summary(
+    fun.data = frequencyAnnotation, geom = "text",
+    position = position_dodge(width = 0.75)
+  ) +
+  facet_wrap(~group) +
+  scale_fill_manual(values = colorRampPalette(brewer.pal("BuPu", n = 4))(12)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
