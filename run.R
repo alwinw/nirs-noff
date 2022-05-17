@@ -52,22 +52,18 @@ demographics |>
     Ethnicity = ethnic,
     `ASA class` = asa,
     `Admission type` = admission,
-    # Preoperative LVEF, %
-    # ef 20-70%
+    `Preoperative LVEF, %` = ef,
     `Coronary artery disease` = cad,
     `Previous myocardial infarction ` = mi_prior,
     `Arterial hypertension` = hypert,
-    # Peripheral vascular disease
-    # arteriopathy
-    # History of stroke
-    # stroke
+    `Peripheral vascular disease` = arteriopathy,
+    `History of stroke` = stroke,
     `Current smoker` = smoker,
-    # Chronic pulmonary disease`
-    # copd
+    `Chronic pulmonary disease` = copd,
     `Diabetes` = diab,
     `Obstructive sleep apnea` = osas,
     `History of neurosurgery` = neurosurg,
-  ) |>
+  ) %>%
   tbl_summary(by = group) |>
   add_p()
 
@@ -112,8 +108,7 @@ demographics |>
 demographics |>
   select(
     group,
-    # RBC transfusion
-    # prbc_ever
+    `RBC transfusion` = prbc_ever,
     `ICU admission` = ae_icuadm,
     `Hospital length of stay` = hlos,
     `Hospital mortality` = hospmort,

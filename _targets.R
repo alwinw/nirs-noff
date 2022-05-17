@@ -3,11 +3,12 @@ library(tarchetypes)
 
 lapply(list.files(here::here("R"), pattern = ".R$", full.names = TRUE), source)
 
-packages <- c("dplyr", "tidyr", "ggplot2", "RColorBrewer", "haven", "gtsummary", "here")
+packages <- c("dplyr", "tidyr", "readr", "ggplot2", "RColorBrewer", "haven", "gtsummary", "here")
 
 tar_option_set(
   packages = packages
 )
+# conflict_prefer("select", "dplyr")
 
 list(
   tar_files(
